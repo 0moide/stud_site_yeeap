@@ -17,3 +17,7 @@
 ☁️ Интеграция с Google Drive
 
     Выгрузка оценок на google drive
+
+Ссылка на видео-демонстрацию
+    
+    https://rutube.ru/video/f276b94bf1ff6d65c9f77741d4a7453b/
