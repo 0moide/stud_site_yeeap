@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление Google Drive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .nav-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.5em;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+        
+        .status-connected {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .status-disconnected {
+            background-color: rgba(244, 67, 54, 0.15);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        
+        .status-dot.connected {
+            background-color: #4CAF50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+        }
+        
+        .status-dot.disconnected {
+            background-color: #f44336;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #2196F3 0%, #0D47A1 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(33, 150, 243, 0.4);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #c62828 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(244, 67, 54, 0.3);
+        }
+        
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(244, 67, 54, 0.4);
+        }
+        
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideDown 0.3s ease;
+        }
+        
+        .alert-success {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: #2E7D32;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .alert-error {
+            background-color: rgba(244, 67, 54, 0.15);
+            color: #c62828;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .history-table th {
+            background-color: #667eea;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+        }
+        
+        .history-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .history-table tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+        
+        .file-link {
+            color: #667eea;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .file-link:hover {
+            text-decoration: underline;
+        }
+        
+        .no-history {
+            text-align: center;
+            padding: 40px 20px;
+            color: #718096;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 Google Drive Экспорт</h1>
+            <p>Выгрузка оценок на ваш Google Drive</p>
+        </div>
+        
+        <div class="nav-links">
+            <a href="/" class="nav-button">🏠 На главную</a>
+            <a href="/grades" class="nav-button">📊 Мои оценки</a>
+            <a href="/logout" class="nav-button">🚪 Выйти</a>
+        </div>
+        
+        <!-- Сообщения -->
+        <div th:if="${success}" class="alert alert-success">
+            <span style="font-size: 20px;">✅</span>
+            <span th:text="${success}"></span>
+            <th:block th:if="${fileUrl}">
+                <br>
+                <a th:href="${fileUrl}" target="_blank" class="file-link">
+                    <span style="font-size: 18px;">🔗</span>
+                    Открыть файл: <span th:text="${fileName}"></span>
+                </a>
+            </th:block>
+        </div>
+        
+        <div th:if="${error}" class="alert alert-error">
+            <span style="font-size: 20px;">❌</span>
+            <span th:text="${error}"></span>
+        </div>
+        
+        <!-- Карточка статуса -->
+        <div class="card">
+            <h2>🔗 Подключение к Google Drive</h2>
+            
+            <div th:if="${hasDriveAccess}" class="status-indicator status-connected">
+                <div class="status-dot connected"></div>
+                <span>Аккаунт Google Drive подключен</span>
+            </div>
+            
+            <div th:unless="${hasDriveAccess}" class="status-indicator status-disconnected">
+                <div class="status-dot disconnected"></div>
+                <span>Google Drive не подключен</span>
+            </div>
+            
+            <p th:if="${hasDriveAccess}">
+                Ваш аккаунт Google Drive подключен. Вы можете выгружать оценки в формате PDF.
+            </p>
+            
+            <p th:unless="${hasDriveAccess}">
+                Для выгрузки оценок на Google Drive необходимо подключить ваш аккаунт.
+                При подключении вы даете разрешение на создание файлов в вашем Google Drive.
+            </p>
+            
+            <div class="actions">
+                <!-- Блок кнопок для подключенного Google Drive -->
+                <th:block th:if="${hasDriveAccess}">
+                    <!-- НОВАЯ кнопка для CSV -->
+                    <form th:action="@{/export/drive/upload-csv}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-secondary">
+                            <span style="font-size: 18px;">📊</span>
+                            Выгрузить CSV на Google Drive
+                        </button>
+                    </form>
+                    
+                    <!-- Существующая кнопка отзыва доступа -->
+                    <form th:action="@{/export/drive/revoke}" method="post" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <span style="font-size: 18px;">🚫</span>
+                            Отозвать доступ
+                        </button>
+                    </form>
+                </th:block>
+                
+                <!-- Блок для неподключенного Google Drive -->
+                <th:block th:unless="${hasDriveAccess}">
+                    <a th:href="${authUrl}" class="btn btn-secondary">
+                        <span style="font-size: 18px;">🔗</span>
+                        Подключить Google Drive
+                    </a>
+                </th:block>
+                
+                <!-- Кнопка скачивания CSV локально (отображается всегда) -->
+                <a th:href="@{/export/download/csv}" class="btn btn-primary" 
+                th:download="${'grades_' + #strings.replace(email, '@', '_') + '.csv'}">
+                    <span style="font-size: 18px;">⬇️</span>
+                    Скачать CSV локально
+                </a>
+            </div>
+            
+            <div style="margin-top: 25px; padding: 15px; background: rgba(102, 126, 234, 0.05); border-radius: 10px;">
+                <p style="margin: 0; font-size: 14px; color: #4a5568;">
+                    <strong>ℹ️ Что будет в файле:</strong> Информация о студенте, все оценки по предметам, 
+                    средний балл, статистика успеваемости и диаграмма распределения оценок.
+                </p>
+            </div>
+        </div>
+        
+        <!-- История выгрузок -->
+        <div class="card">
+            <h2>📋 История выгрузок</h2>
+            
+            <th:block th:if="${history != null and !history.isEmpty()}">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Имя файла</th>
+                            <th>Дата выгрузки</th>
+                            <th>Статус</th>
+                            <th>Ссылка</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="item : ${history}">
+                            <td th:text="${item.file_name}"></td>
+                            <td th:text="${item.export_date}"></td>
+                            <td>
+                                <span th:if="${item.status == 'SUCCESS'}" 
+                                      style="color: #4CAF50; font-weight: 500;">✅ Успешно</span>
+                                <span th:if="${item.status == 'ERROR'}" 
+                                      style="color: #f44336; font-weight: 500;">❌ Ошибка</span>
+                            </td>
+                            <td>
+                                <th:block th:if="${item.file_url}">
+                                    <a th:href="${item.file_url}" target="_blank" class="file-link">
+                                        <span style="font-size: 16px;">🔗</span>
+                                        Открыть
+                                    </a>
+                                </th:block>
+                                <th:block th:unless="${item.file_url}">
+                                    <span style="color: #718096;">—</span>
+                                </th:block>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </th:block>
+            
+            <th:block th:if="${history == null or history.isEmpty()}">
+                <div class="no-history">
+                    <div style="font-size: 64px; margin-bottom: 20px; opacity: 0.5;">📭</div>
+                    <h3>История пуста</h3>
+                    <p>Вы еще не выгружали оценки на Google Drive</p>
+                </div>
+            </th:block>
+        </div>
+        
+        <div class="footer">
+            <p>Система экспорта оценок</p>
+        </div>
+    </div>
+</body>
+</html>

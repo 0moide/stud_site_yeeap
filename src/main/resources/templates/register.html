@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .register-container {
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            animation: slideUp 0.6s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .register-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #667eea;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 15px;
+        }
+        
+        /* Форма */
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+        }
+        
+        .form-input::placeholder {
+            color: #a0aec0;
+        }
+        
+        .password-strength {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 2px;
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+        
+        /* Результат */
+        #result {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 16px;
+            animation: slideIn 0.5s ease;
+            display: none;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .success {
+            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+            color: #276749;
+            border-left: 4px solid #38a169;
+        }
+        
+        .error {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #c53030;
+            border-left: 4px solid #c53030;
+        }
+        
+        /* Кнопка */
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 18px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* Ссылки */
+        .links {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .links p {
+            margin: 10px 0;
+            color: #718096;
+        }
+        
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .links a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        /* Информационный блок */
+        .info-box {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-box h4 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+        
+        .info-box p {
+            margin: 8px 0;
+            color: #718096;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* Правила валидации */
+        .validation-rules {
+            background: rgba(102, 126, 234, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #4a5568;
+        }
+        
+        .validation-rules ul {
+            margin: 10px 0 0 20px;
+        }
+        
+        .validation-rules li {
+            margin: 5px 0;
+            transition: color 0.3s ease;
+        }
+        
+        .validation-rules li.valid {
+            color: #48bb78;
+        }
+        
+        .validation-rules li::before {
+            content: '○';
+            margin-right: 8px;
+        }
+        
+        .validation-rules li.valid::before {
+            content: '✓';
+            color: #48bb78;
+        }
+        
+        /* Анимация загрузки */
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 480px) {
+            .register-card {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .form-input, .submit-btn {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-card">
+            <div class="register-header">
+                <div class="register-icon">📝</div>
+                <h1>Создать аккаунт</h1>
+                <p class="subtitle">Присоединяйтесь к учебному порталу</p>
+            </div>
+            
+            <!-- Форма регистрации -->
+            <form onsubmit="register(event)" id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>📧</span>
+                        Электронная почта
+                    </label>
+                    <input type="email" id="email" class="form-input" 
+                           placeholder="example@university.edu" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <span>🔒</span>
+                        Пароль
+                    </label>
+                    <input type="password" id="password" class="form-input" 
+                           placeholder="Придумайте надежный пароль" required
+                           oninput="checkPasswordStrength(this.value)">
+                    
+                    <div class="password-strength">
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+                    
+                    <div class="validation-rules">
+                        <p style="margin-top: 0;"><strong>Требования к паролю:</strong></p>
+                        <ul>
+                            <li id="rule-length">Не менее 6 символов</li>
+                            <li id="rule-number">Содержит цифры</li>
+                            <li id="rule-letter">Содержит буквы</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Индикатор загрузки -->
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Регистрация...</p>
+                </div>
+                
+                <!-- Результат -->
+                <div id="result"></div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <span>📝</span>
+                    Создать аккаунт
+                </button>
+            </form>
+            
+            <!-- Ссылки -->
+            <div class="links">
+                <p>Уже есть аккаунт? <a href="/login">Войти в систему</a></p>
+                <p><a href="/">← Вернуться на главную</a></p>
+            </div>
+            
+            <!-- Информация -->
+            <div class="info-box">
+                <h4>ℹ️ О регистрации</h4>
+                <p>После регистрации вы сможете:</p>
+                <ul style="margin: 10px 0 0 20px; color: #718096;">
+                    <li>Просматривать расписание занятий</li>
+                    <li>Отслеживать свои оценки</li>
+                    <li>Привязывать OAuth аккаунты</li>
+                    <li>Получить студенческий профиль</li>
+                </ul>
+                <p style="margin-top: 15px; font-size: 13px; color: #a0aec0;">
+                    Регистрация автоматически создаст для вас студенческий профиль с тестовыми данными.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let passwordStrength = 0;
+        
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            const rules = {
+                length: false,
+                number: false,
+                letter: false
+            };
+            
+            // Проверка длины
+            if (password.length >= 6) {
+                strength += 33;
+                rules.length = true;
+                document.getElementById('rule-length').classList.add('valid');
+            } else {
+                document.getElementById('rule-length').classList.remove('valid');
+            }
+            
+            // Проверка на наличие цифр
+            if (/\d/.test(password)) {
+                strength += 33;
+                rules.number = true;
+                document.getElementById('rule-number').classList.add('valid');
+            } else {
+                document.getElementById('rule-number').classList.remove('valid');
+            }
+            
+            // Проверка на наличие букв
+            if (/[a-zA-Zа-яА-Я]/.test(password)) {
+                strength += 34;
+                rules.letter = true;
+                document.getElementById('rule-letter').classList.add('valid');
+            } else {
+                document.getElementById('rule-letter').classList.remove('valid');
+            }
+            
+            // Обновление индикатора силы
+            const strengthBar = document.getElementById('strengthBar');
+            strengthBar.style.width = strength + '%';
+            
+            // Цвет индикатора в зависимости от силы
+            if (strength < 33) {
+                strengthBar.style.backgroundColor = '#f56565';
+            } else if (strength < 66) {
+                strengthBar.style.backgroundColor = '#ed8936';
+            } else {
+                strengthBar.style.backgroundColor = '#48bb78';
+            }
+            
+            passwordStrength = strength;
+            return rules;
+        }
+        
+        function register(event) {
+            event.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            
+            // Проверка валидности пароля
+            const rules = checkPasswordStrength(password);
+            const isValidPassword = rules.length && rules.number && rules.letter;
+            
+            if (!isValidPassword) {
+                showResult('Пожалуйста, убедитесь, что пароль соответствует всем требованиям', 'error');
+                return;
+            }
+            
+            // Проверка email
+            if (!email || !email.includes('@')) {
+                showResult('Пожалуйста, введите корректный email адрес', 'error');
+                return;
+            }
+            
+            // Показать индикатор загрузки
+            const loading = document.getElementById('loading');
+            const submitBtn = document.getElementById('submitBtn');
+            const resultDiv = document.getElementById('result');
+            
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⌛ Обработка...';
+            resultDiv.style.display = 'none';
+            
+            // Отправка запроса
+            fetch('/api/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `password=${encodeURIComponent(password)}&email=${encodeURIComponent(email)}`
+            })
+            .then(response => {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>📝</span> Создать аккаунт';
+                
+                if (!response.ok) {
+                    throw new Error('Ошибка сети');
+                }
+                return response.text();
+            })
+            .then(data => {
+                if (data.includes('успешно')) {
+                    showResult(data + ' <a href="/login" style="color: #276749; font-weight: 600;">Войти сейчас →</a>', 'success');
+                    document.getElementById('registerForm').reset();
+                    document.getElementById('strengthBar').style.width = '0%';
+                    
+                    // Сброс валидации
+                    ['rule-length', 'rule-number', 'rule-letter'].forEach(id => {
+                        document.getElementById(id).classList.remove('valid');
+                    });
+                } else {
+                    showResult(data, 'error');
+                }
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>📝</span> Создать аккаунт';
+                showResult('Ошибка при регистрации. Проверьте подключение к интернету.', 'error');
+                console.error('Ошибка:', error);
+            });
+        }
+        
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = message;
+            resultDiv.className = type;
+            resultDiv.style.display = 'block';
+            
+            // Автоматическое скрытие успешных сообщений
+            if (type === 'success') {
+                setTimeout(() => {
+                    resultDiv.style.transition = 'opacity 0.5s';
+                    resultDiv.style.opacity = '0';
+                    setTimeout(() => {
+                        resultDiv.style.display = 'none';
+                        resultDiv.style.opacity = '1';
+                    }, 500);
+                }, 5000);
+            }
+        }
+        
+        // Фокус на поле email при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('email').focus();
+            
+            // Добавляем стиль для placeholder
+            const style = document.createElement('style');
+            style.textContent = `
+                ::placeholder {
+                    color: #a0aec0;
+                    opacity: 1;
+                }
+                
+                :-ms-input-placeholder {
+                    color: #a0aec0;
+                }
+                
+                ::-ms-input-placeholder {
+                    color: #a0aec0;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html>

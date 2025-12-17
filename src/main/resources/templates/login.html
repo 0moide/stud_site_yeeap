@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в систему</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .login-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        h1 {
+            color: #2d3748;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            font-size: 15px;
+        }
+        
+        /* Сообщения */
+        .message {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.5s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .error-message {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #c53030;
+            border-left: 4px solid #c53030;
+        }
+        
+        .success-message {
+            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+            color: #276749;
+            border-left: 4px solid #38a169;
+        }
+        
+        /* OAuth кнопки */
+        .oauth-section {
+            margin-bottom: 25px;
+        }
+        
+        .oauth-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-bottom: 12px;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .oauth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-google {
+            background: linear-gradient(135deg, #DB4437 0%, #c23321 100%);
+        }
+        
+        .btn-github {
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            color: #a0aec0;
+            font-size: 14px;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .divider-text {
+            padding: 0 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Форма */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        /* Ссылки */
+        .links {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .links a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .links a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+        
+        /* Тестовые данные */
+        .test-data {
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .test-data h4 {
+            color: #4a5568;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .test-data p {
+            margin: 8px 0;
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .test-data strong {
+            color: #2d3748;
+            min-width: 80px;
+            display: inline-block;
+        }
+        
+        /* OAuth success сообщения */
+        .oauth-success {
+            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+            color: #276749;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #38a169;
+            animation: slideIn 0.5s ease;
+        }
+        
+        .oauth-error {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #c53030;
+            animation: slideIn 0.5s ease;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 20px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .oauth-btn, .submit-btn {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-icon">🔐</div>
+                <h1>Добро пожаловать</h1>
+                <p class="subtitle">Войдите в свой аккаунт для продолжения</p>
+            </div>
+            
+            <!-- OAuth успешные сообщения -->
+            <div th:if="${oauth_link_success}" class="oauth-success">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 20px;">✅</span>
+                    <div>
+                        <strong>Успешно привязан <span th:text="${oauth_link_success}"></span></strong>
+                        <div th:if="${email}" style="font-size: 14px; margin-top: 3px;">
+                            Аккаунт привязан к: <strong th:text="${email}"></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div th:if="${oauth_link_error}" class="oauth-error">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 20px;">❌</span>
+                    <div>
+                        <strong>Ошибка привязки</strong>
+                        <div style="font-size: 14px; margin-top: 3px;" th:text="${oauth_link_error}"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Сообщения об ошибках/успехе -->
+            <div th:if="${param.error}" class="error-message">
+                <span style="font-size: 20px;">⚠️</span>
+                <div>
+                    <strong>Ошибка входа</strong>
+                    <div th:if="${param.auth_error}">Ошибка авторизации через социальную сеть</div>
+                    <div th:unless="${param.auth_error}">Неверное имя пользователя или пароль</div>
+                </div>
+            </div>
+            
+            <div th:if="${param.logout}" class="success-message">
+                <span style="font-size: 20px;">✅</span>
+                <div>
+                    <strong>Выход выполнен</strong>
+                    <div>Вы успешно вышли из системы</div>
+                </div>
+            </div>
+            
+            <!-- OAuth кнопки -->
+            <div class="oauth-section">
+                <a href="/oauth2/authorization/google" class="oauth-btn btn-google">
+                    <span style="font-size: 20px;">🔴</span>
+                    <span>Войти через Google</span>
+                </a>
+                <a href="/oauth2/authorization/github" class="oauth-btn btn-github">
+                    <span style="font-size: 20px;">⚫</span>
+                    <span>Войти через GitHub</span>
+                </a>
+            </div>
+            
+            <!-- Разделитель -->
+            <div class="divider">
+                <span class="divider-text">Или через email</span>
+            </div>
+            
+            <!-- Форма входа -->
+            <form method="POST" action="/login" id="loginForm">
+                <div class="form-group">
+                    <label class="form-label">📧 Электронная почта</label>
+                    <input type="email" name="username" class="form-input" 
+                           placeholder="example@university.edu" required
+                           th:value="${email}">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">🔒 Пароль</label>
+                    <input type="password" name="password" class="form-input" 
+                           placeholder="Введите пароль" required>
+                </div>
+                
+                <button type="submit" class="submit-btn">Войти в систему</button>
+            </form>
+            
+            <!-- Ссылки -->
+            <div class="links">
+                <p>Нет аккаунта? <a href="/register">Зарегистрируйтесь</a></p>
+                <p><a href="/">← Вернуться на главную</a></p>
+            </div>
+            
+            <!-- Тестовые данные -->
+            <div class="test-data">
+                <h4>📋 Тестовые учетные данные</h4>
+                <p><strong>Логин:</strong> admin</p>
+                <p><strong>Пароль:</strong> 123</p>
+                <p style="margin-top: 10px; font-size: 13px; color: #a0aec0;">
+                    Или используйте любую почту из списка пользователей с паролем "password123"
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Фокус на поле ввода при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            const emailInput = document.querySelector('input[name="username"]');
+            if (emailInput && !emailInput.value) {
+                emailInput.focus();
+            }
+        });
+        
+        // Анимация при загрузке
+        document.querySelector('.login-card').style.animation = 'slideIn 0.6s ease';
+        
+        // Добавляем стиль для placeholder
+        const style = document.createElement('style');
+        style.textContent = `
+            ::placeholder {
+                color: #a0aec0;
+                opacity: 1;
+            }
+            
+            :-ms-input-placeholder {
+                color: #a0aec0;
+            }
+            
+            ::-ms-input-placeholder {
+                color: #a0aec0;
+            }
+            
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+            
+            .login-icon {
+                animation: pulse 2s infinite;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

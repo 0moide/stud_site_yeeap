@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="ru" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои оценки</title>
+    
+    <!-- Chart.js через CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .header p {
+            color: #718096;
+            font-size: 1.2em;
+            margin-top: 5px;
+        }
+        
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
+        .nav-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.6em;
+        }
+        
+        .student-details p {
+            margin: 15px 0;
+            font-size: 17px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .student-details strong {
+            color: #4a5568;
+            min-width: 140px;
+            display: inline-block;
+        }
+        
+        .stats-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 25px;
+        }
+        
+        .average-grade {
+            font-size: 48px;
+            font-weight: bold;
+            color: #48bb78;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+            margin: 15px 0;
+        }
+        
+        .chart-wrapper {
+            height: 300px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #e2e8f0;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .legend-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 25px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .stat-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-percentage {
+            font-size: 15px;
+            font-weight: 500;
+            color: #667eea;
+            margin-top: 5px;
+        }
+        
+        .grades-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .grades-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        .grade-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            border-left: 6px solid #4CAF50;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .grade-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #4CAF50, #3d5d52);
+        }
+        
+        .grade-excellent {
+            border-left-color: #4CAF50;
+        }
+        
+        .grade-good {
+            border-left-color: #FFC107;
+        }
+        
+        .grade-good::before {
+            background: linear-gradient(90deg, #FFC107, #ffb300);
+        }
+        
+        .grade-satisfactory {
+            border-left-color: #FF9800;
+        }
+        
+        .grade-satisfactory::before {
+            background: linear-gradient(90deg, #FF9800, #f57c00);
+        }
+        
+        .grade-unsatisfactory {
+            border-left-color: #F44336;
+        }
+        
+        .grade-unsatisfactory::before {
+            background: linear-gradient(90deg, #F44336, #d32f2f);
+        }
+        
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .subject-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2d3748;
+            margin: 0;
+        }
+        
+        .grade-value {
+            font-size: 36px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .grade-good .grade-value {
+            background: linear-gradient(135deg, #FFC107, #ff9800);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subject-description {
+            color: #718096;
+            font-size: 15px;
+            margin: 10px 0;
+            line-height: 1.5;
+        }
+        
+        .exam-date {
+            color: #a0aec0;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 12px;
+        }
+        
+        .badge-excellent {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .badge-good {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ff9800;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .badge-satisfactory {
+            background-color: rgba(255, 152, 0, 0.15);
+            color: #ff5722;
+            border: 1px solid rgba(255, 152, 0, 0.3);
+        }
+        
+        .badge-unsatisfactory {
+            background-color: rgba(244, 67, 54, 0.15);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        
+        .no-grades {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+        
+        .no-grades h3 {
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: #4a5568;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 25px;
+            border-top: 2px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 Электронная зачётная книжка</h1>
+            <p>Ваша академическая успеваемость в реальном времени</p>
+        </div>
+        
+        <div class="nav-links">
+            <a href="/" class="nav-button">🏠 На главную</a>
+            <a href="/export/drive" class="nav-button">📁 Выгрузить на Google Drive</a>
+            <a href="/oauth-management" class="nav-button">🔐 OAuth Аккаунты</a>
+            <a href="/logout" class="nav-button">🚪 Выйти</a>
+        </div>
+        
+        <!-- Скрытые данные для графика -->
+        <div id="chart-data" 
+             th:data-excellent="${chartData.excellent}"
+             th:data-good="${chartData.good}"
+             th:data-satisfactory="${chartData.satisfactory}"
+             th:data-unsatisfactory="${chartData.unsatisfactory}"
+             th:data-percent-excellent="${chartData.percentageExcellent}"
+             th:data-percent-good="${chartData.percentageGood}"
+             th:data-percent-satisfactory="${chartData.percentageSatisfactory}"
+             th:data-percent-unsatisfactory="${chartData.percentageUnsatisfactory}"
+             style="display: none;">
+        </div>
+        
+        <div class="dashboard">
+            <!-- Карточка профиля -->
+            <div class="card">
+                <h2>👤 Профиль студента</h2>
+                <div class="student-details" th:if="${studentInfo}">
+                    <p><strong>ФИО:</strong> <span th:text="${studentInfo.full_name}"></span></p>
+                    <p><strong>Группа:</strong> <span th:text="${studentInfo.group_name}"></span></p>
+                    <p><strong>Пользователь:</strong> <span th:text="${username}"></span></p>
+                    <p><strong>Всего предметов:</strong> <span th:text="${gradesCount}"></span></p>
+                </div>
+                <div th:unless="${studentInfo}" style="color: #f44336; padding: 20px; text-align: center;">
+                    <div style="font-size: 48px; margin-bottom: 15px;">❌</div>
+                    <p style="font-size: 18px;">Информация о студенте не найдена</p>
+                </div>
+                
+                <div class="stats-summary">
+                    <h3 style="margin-top: 0; color: white; font-size: 1.4em;">📊 Общая успеваемость</h3>
+                    <p style="margin: 5px 0; opacity: 0.9;">Средний балл:</p>
+                    <div class="average-grade" th:text="${averageGrade}">0.00</div>
+                    <p style="margin: 10px 0 0; font-size: 15px; opacity: 0.9;">
+                        На основе <span th:text="${gradesCount}">0</span> оценок
+                    </p>
+                </div>
+            </div>
+            
+            <!-- График -->
+            <div class="card">
+                <h2>📈 Распределение оценок</h2>
+                
+                <div class="chart-wrapper">
+                    <canvas id="gradesChart"></canvas>
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item" data-category="excellent">
+                        <div class="legend-color" style="background-color: #4CAF50;"></div>
+                        <span>Отлично (90-100)</span>
+                    </div>
+                    <div class="legend-item" data-category="good">
+                        <div class="legend-color" style="background-color: #FFC107;"></div>
+                        <span>Хорошо (75-89)</span>
+                    </div>
+                    <div class="legend-item" data-category="satisfactory">
+                        <div class="legend-color" style="background-color: #FF9800;"></div>
+                        <span>Удовлетворительно (60-74)</span>
+                    </div>
+                    <div class="legend-item" data-category="unsatisfactory">
+                        <div class="legend-color" style="background-color: #F44336;"></div>
+                        <span>Неудовлетворительно (<60)</span>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card" data-category="excellent">
+                        <div class="stat-label">Отличных оценок</div>
+                        <div class="stat-value" style="color: #4CAF50;" id="stat-excellent">0</div>
+                        <div class="stat-percentage" id="percent-excellent">0%</div>
+                    </div>
+                    <div class="stat-card" data-category="good">
+                        <div class="stat-label">Хороших оценок</div>
+                        <div class="stat-value" style="color: #FFC107;" id="stat-good">0</div>
+                        <div class="stat-percentage" id="percent-good">0%</div>
+                    </div>
+                    <div class="stat-card" data-category="satisfactory">
+                        <div class="stat-label">Удовлетворительных</div>
+                        <div class="stat-value" style="color: #FF9800;" id="stat-satisfactory">0</div>
+                        <div class="stat-percentage" id="percent-satisfactory">0%</div>
+                    </div>
+                    <div class="stat-card" data-category="unsatisfactory">
+                        <div class="stat-label">Неудовлетворительных</div>
+                        <div class="stat-value" style="color: #F44336;" id="stat-unsatisfactory">0</div>
+                        <div class="stat-percentage" id="percent-unsatisfactory">0%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Список оценок -->
+        <!-- Полностью перепишите блок с оценками на безопасный доступ: -->
+        <div class="grades-section">
+            <h2>📝 Все оценки</h2>
+            
+            <div th:if="${gradesCount > 0}">
+                <div class="grades-container">
+                    <div th:each="grade : ${grades}" 
+                        th:with="gradeValue=${grade.get('grade')} ?: 0,
+                                subjectName=${grade.get('subject_name')} ?: 'Без названия',
+                                description=${grade.get('description')} ?: 'Описание отсутствует',
+                                examDate=${grade.get('exam_date')} ?: 'Дата не указана'"
+                        th:class="${gradeValue >= 90 ? 'grade-card grade-excellent' : 
+                                    (gradeValue >= 75 ? 'grade-card grade-good' : 
+                                    (gradeValue >= 60 ? 'grade-card grade-satisfactory' : 
+                                    'grade-card grade-unsatisfactory'))}"
+                        th:style="'animation-delay: ' + ${gradeStat.index * 0.1} + 's'">
+                        
+                        <div class="subject-header">
+                            <h3 class="subject-name" th:text="${subjectName}"></h3>
+                            <div class="grade-value" th:text="${gradeValue}"></div>
+                        </div>
+                        
+                        <div class="subject-description" th:text="${description}"></div>
+                        
+                        <div th:class="${gradeValue >= 90 ? 'category-badge badge-excellent' :
+                                    (gradeValue >= 75 ? 'category-badge badge-good' :
+                                    (gradeValue >= 60 ? 'category-badge badge-satisfactory' : 
+                                    'category-badge badge-unsatisfactory'))}">
+                            <span th:text="${gradeValue >= 90 ? 'Отлично' :
+                                        (gradeValue >= 75 ? 'Хорошо' :
+                                        (gradeValue >= 60 ? 'Удовлетворительно' : 
+                                        'Неудовлетворительно'))}"></span>
+                        </div>
+                        
+                        <div class="exam-date">
+                            <span style="font-size: 16px;">📅</span>
+                            Дата экзамена: 
+                            <span th:text="${examDate}"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div th:unless="${gradesCount > 0}" class="no-grades">
+                <div style="font-size: 64px; margin-bottom: 20px;">📭</div>
+                <h3>Оценок пока нет</h3>
+                <p style="margin-top: 10px;">Ваши оценки появятся здесь после сдачи экзаменов</p>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Система электронной зачётной книжки • Обновлено: <span th:text="${#dates.format(#dates.createNow(), 'dd.MM.yyyy HH:mm')}"></span></p>
+            <p style="margin-top: 5px; font-size: 14px; opacity: 0.8;">Для добавления новых оценок обратитесь к преподавателю</p>
+        </div>
+    </div>
+
+    <!-- JavaScript для графика (упрощенный) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chartElement = document.getElementById('chart-data');
+            
+            const excellent = parseInt(chartElement.getAttribute('data-excellent')) || 0;
+            const good = parseInt(chartElement.getAttribute('data-good')) || 0;
+            const satisfactory = parseInt(chartElement.getAttribute('data-satisfactory')) || 0;
+                        const unsatisfactory = parseInt(chartElement.getAttribute('data-unsatisfactory')) || 0;
+            
+            // Извлекаем проценты
+            const percentExcellent = chartElement.getAttribute('data-percent-excellent') || "0";
+            const percentGood = chartElement.getAttribute('data-percent-good') || "0";
+            const percentSatisfactory = chartElement.getAttribute('data-percent-satisfactory') || "0";
+            const percentUnsatisfactory = chartElement.getAttribute('data-percent-unsatisfactory') || "0";
+            
+            // Обновляем статистику
+            document.getElementById('stat-excellent').textContent = excellent;
+            document.getElementById('stat-good').textContent = good;
+            document.getElementById('stat-satisfactory').textContent = satisfactory;
+            document.getElementById('stat-unsatisfactory').textContent = unsatisfactory;
+            
+            document.getElementById('percent-excellent').textContent = percentExcellent + '%';
+            document.getElementById('percent-good').textContent = percentGood + '%';
+            document.getElementById('percent-satisfactory').textContent = percentSatisfactory + '%';
+            document.getElementById('percent-unsatisfactory').textContent = percentUnsatisfactory + '%';
+            
+            // Данные для диаграммы
+            const data = [excellent, good, satisfactory, unsatisfactory];
+            const colors = ["#4CAF50", "#FFC107", "#FF9800", "#F44336"];
+            const labels = ["Отлично", "Хорошо", "Удовлетворительно", "Неудовлетворительно"];
+            const descriptions = ["(90-100 баллов)", "(75-89 баллов)", "(60-74 балла)", "(менее 60 баллов)"];
+            
+            // Проверяем, есть ли данные для отображения
+            const hasData = data.some(value => value > 0);
+            
+            if (!hasData) {
+                const chartWrapper = document.querySelector('.chart-wrapper');
+                chartWrapper.innerHTML = 
+                    '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #718096; text-align: center; padding: 30px;">' +
+                    '<div style="font-size: 64px; margin-bottom: 15px; opacity: 0.5;">📊</div>' +
+                    '<p style="font-size: 18px; margin: 0; color: #4a5568;">Нет данных для диаграммы</p>' +
+                    '<p style="font-size: 14px; opacity: 0.7; margin-top: 8px;">Оценки появятся после сдачи экзаменов</p>' +
+                    '</div>';
+                return;
+            }
+            
+            // Создаем круговую диаграмму
+            const ctx = document.getElementById('gradesChart').getContext('2d');
+            
+            const gradesChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.map((label, i) => `${label} ${descriptions[i]}`),
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.map(color => color + 'CC'),
+                        borderColor: colors.map(color => color + 'FF'),
+                        borderWidth: 2,
+                        hoverBackgroundColor: colors,
+                        hoverBorderWidth: 3,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(45, 55, 72, 0.95)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: '#667eea',
+                            borderWidth: 1,
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            boxPadding: 6,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label || '';
+                                    const value = context.raw || 0;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                    return `${label.split(' ')[0]}: ${value} оценок (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%',
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true,
+                        duration: 1500,
+                        easing: 'easeOutQuart'
+                    },
+                    hover: {
+                        mode: 'nearest',
+                        intersect: true
+                    }
+                }
+            });
+            
+            // Интерактивность для легенды
+            function highlightCategory(category) {
+                const categoryIndex = { 'excellent': 0, 'good': 1, 'satisfactory': 2, 'unsatisfactory': 3 }[category];
+                
+                if (categoryIndex !== undefined && data[categoryIndex] > 0) {
+                    const originalColors = [...colors];
+                    const highlightedColors = originalColors.map((color, index) => 
+                        index === categoryIndex ? color : color + '40'
+                    );
+                    
+                    gradesChart.data.datasets[0].backgroundColor = highlightedColors;
+                    gradesChart.update();
+                    
+                    // Подсветка соответствующего элемента легенды
+                    document.querySelectorAll('.legend-item').forEach(item => {
+                        if (item.dataset.category === category) {
+                            item.style.transform = 'scale(1.05)';
+                            item.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                        }
+                    });
+                    
+                    // Подсветка статистики
+                    document.querySelectorAll('.stat-card').forEach(card => {
+                        if (card.dataset.category === category) {
+                            card.style.transform = 'scale(1.05)';
+                            card.style.boxShadow = '0 8px 25px rgba(102, 126, 234, 0.2)';
+                        }
+                    });
+                }
+            }
+            
+            function resetHighlight() {
+                gradesChart.data.datasets[0].backgroundColor = colors.map(color => color + 'CC');
+                gradesChart.update();
+                
+                document.querySelectorAll('.legend-item').forEach(item => {
+                    item.style.transform = 'scale(1)';
+                    item.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)';
+                });
+                
+                document.querySelectorAll('.stat-card').forEach(card => {
+                    card.style.transform = 'scale(1)';
+                    card.style.boxShadow = 'none';
+                });
+            }
+            
+            // Добавляем обработчики
+            document.querySelectorAll('.legend-item, .stat-card').forEach(element => {
+                element.addEventListener('mouseenter', function() {
+                    highlightCategory(this.dataset.category);
+                });
+                
+                element.addEventListener('mouseleave', resetHighlight);
+                
+                element.addEventListener('click', function() {
+                    highlightCategory(this.dataset.category);
+                    setTimeout(resetHighlight, 2000);
+                });
+            });
+            
+            // Анимация для карточек оценок
+            document.querySelectorAll('.grade-card').forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+            
+            // Добавляем дополнительные анимации
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(1.02); }
+                    100% { transform: scale(1); }
+                }
+                
+                .stat-card:hover {
+                    animation: pulse 0.5s ease;
+                }
+                
+                .grade-card:hover {
+                    transform: translateY(-5px) scale(1.02);
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                }
+                
+                /* Анимация появления */
+                .header {
+                    animation: slideDown 0.8s ease;
+                }
+                
+                @keyframes slideDown {
+                    from { transform: translateY(-20px); opacity: 0; }
+                    to { transform: translateY(0); opacity: 1; }
+                }
+                
+                .card, .grades-section {
+                    animation: fadeIn 0.6s ease;
+                }
+                
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // Автоматическая подсветка при наличии отличных оценок
+            if (excellent > 0) {
+                setTimeout(() => {
+                    highlightCategory('excellent');
+                    setTimeout(resetHighlight, 1500);
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
